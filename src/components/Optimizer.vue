@@ -4,22 +4,24 @@
       <v-card-text>
         <div class="overline">SOURCE: Minify and Optimize</div>
         <p class="display-1 font-weight-regular text--primary" v-text="welcome"></p>
-        <div class="text--primary">Original - Clinic Sample:</div>
+        <div class="text--primary">Original - Clinic Sample</div>
         <vue-json-editor v-model="clinic_sample" :mode="mode" :show-btns="show_buttons" :exapndedOnStart="expanded" @json-change="onJsonChange"></vue-json-editor>
       </v-card-text>
       <v-card-actions v-if="valid_clinic_sample">
         <v-btn text @click="do_optimize">Optimize Now</v-btn>
       </v-card-actions>
-      <v-card-text v-else>
-        <v-alert type="info" v-text="valid_clinic_sample_text"></v-alert>
-      </v-card-text>
+      <div v-else>
+        <v-card-text>
+          <v-alert type="info" v-text="valid_clinic_sample_text"></v-alert>
+        </v-card-text>
+      </div>
     </v-card>
 
     <v-card style="margin-top:24px;">
       <v-card-text v-if="optimized">
         <div class="overline">RESULT:</div>
         <p class="display-1 font-weight-regular text--primary" v-text="win_size"></p>
-        <div class="text--primary">Optimized - Clinic Sample:</div>
+        <div class="text--primary">Optimized - Clinic Sample</div>
 
         <vue-json-editor v-model="optimized_clinic_sample" :mode="mode" :show-btns="show_buttons" :exapndedOnStart="expanded" @json-change="onJsonChange"></vue-json-editor>
       </v-card-text>
@@ -77,8 +79,12 @@ export default {
     }
   },
   methods: {
+    load_cs: function(sample) {
+      this.clinic_sample = this.$store.state.cs.bscl;
+      console.log(sample);
+    },
     round_one: function(number) {
-      return Math.round(number * 10) / 10
+      return Math.round(number * 10) / 10;
     },
     clean_data_array: function(array_item) {
       array_item.forEach(element => {
@@ -94,11 +100,24 @@ export default {
                 delete element.patients;  
               };
               if ('statistics' in element) {
-                // element.statistics
-                this.clinic_sample.variables.forEach(variable => {
-                  console.log(variable, element.statistics[variable]);
-                  //element.statistics[variable] = this.round_one(element.statistics[variable]);
-                })
+                
+              //   // element.statistics
+              //   this.clinic_sample.variables.forEach(variable => {
+              //     const stat = Object.assign({}, element.statistics[variable]);
+
+              //     // Loop Object 
+              //     const keys = Object.keys(stat);
+              //     console.log(keys);
+              //     keys.forEach(key => {
+              //       stat[key] = this.round_one(stat[key]);
+              //       //stat[key] = null;
+              //     });
+              //     
+              //     // Save
+              //     console.error('===>', stat);
+              //     element.statistics[variable] = stat;
+              //   });
+
               };
                 
             } catch (e) {
@@ -122,11 +141,11 @@ export default {
             };
           };
         };
-      });
+      }).bind(this);
     },
     do_optimize: function() {
       var cs = Object.assign({}, this.clinic_sample);
-      console.error("do_optimize", cs);
+      console.log("-- do_optimize", cs);
 
       // Delete Unneeded stuff
       if ('location' in cs) {
@@ -137,13 +156,13 @@ export default {
       };
 
       // Remove Patient & Scores
-
-      cs.data.forEach(element => {
-        console.log('element', element);
-        if (Array.isArray(element)) {
-          this.clean_data_array(element);  
-        };
-      });
+      this.clean_data_array(cs.data); 
+      // cs.data.forEach(element => {
+      //   console.log('element', element);
+      //   if (Array.isArray(element)) {
+      //      
+      //   };
+      // });
 
       // round to one decimal
       // this.round_one();
@@ -153,7 +172,7 @@ export default {
       this.optimized = true;
     },
     do_validate: function(cs) {
-      console.error("do_validate", cs);
+      console.log("-- do_validate", cs);
       var return_bool = false;
       if ('date' in cs) {
         if ('dimensions' in cs) {
